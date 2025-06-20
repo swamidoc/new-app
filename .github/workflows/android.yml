@@ -9,35 +9,33 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout source code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up system and install dependencies
+      - name: Install Build Tools and Dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk git \
             autoconf automake libtool libffi-dev libssl-dev libsqlite3-dev \
-            zlib1g-dev pkg-config libgl1-mesa-dev
-
-      - name: Install Python packages
-        run: |
+            zlib1g-dev wget pkg-config libgl1-mesa-dev
           pip install --upgrade pip
-          pip install cython==0.29.36 buildozer==1.5.0
+          pip install cython buildozer
 
-      - name: Install Android SDK licenses & build-tools
+      - name: Accept Android SDK licenses and install tools
         run: |
           mkdir -p ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
-          yes | sdkmanager "build-tools;33.0.2" "platforms;android-31" || true
+          yes | sdkmanager --licenses
+          yes | sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-31"
 
-      - name: Update and prepare Buildozer
+      - name: Initialize Buildozer
         run: |
           buildozer android update
 
-      - name: Build the APK
-        run: buildozer android debug
+      - name: Build APK
+        run: |
+          buildozer android debug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
