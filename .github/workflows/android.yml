@@ -6,13 +6,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # ✅ Use stable version
+    runs-on: ubuntu-22.04  # Stable image
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Build Tools and Dependencies
+      - name: 🧹 Clean Build Cache (optional)
+        run: |
+          rm -rf .buildozer/ .gradle/  # Ensure fresh build
+
+      - name: ⚙️ Install Build Tools and Dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk git \
@@ -21,18 +25,22 @@ jobs:
           pip install --upgrade pip
           pip install cython buildozer
 
-      - name: Accept Android SDK licenses
+      - name: ✅ Accept Android SDK Licenses
         run: |
           mkdir -p ~/.android
           echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
           yes | buildozer android update
 
-      - name: Build APK
+      - name: 🔧 Set Buildozer Compatibility (force py3.9 + fix pyjnius)
         run: |
-          buildozer android debug
+          sed -i 's/^requirements =.*/requirements = python3==3.9,kivy==2.2.1,kivymd,pillow,pydicom,opencv-python-headless,numpy,scipy,matplotlib,torch==2.0.1,torchvision==0.15.2/' buildozer.spec
+          echo "p4a.branch = develop" >> buildozer.spec
 
-      - name: Upload APK artifact
+      - name: 📦 Build APK
+        run: buildozer android debug
+
+      - name: 📤 Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
-          path: bin/*.a*
+          path: bin/*.apk
