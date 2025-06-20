@@ -7,7 +7,7 @@ package.domain = org.swamidoc
 source.dir = .
 source.include_exts = py,png,jpg,kv,json
 version = 0.1
-orientation = all
+orientation = portrait
 fullscreen = 0
 
 # Icon and splash (optional)
