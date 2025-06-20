@@ -6,7 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 1.0
 requirements = python3,kivy,kivymd,pillow,pydicom,opencv-python,torch,torchvision,numpy
-orientation = = portrait  # or sensorLandscape
+orientation = = portrait
 fullscreen = 0
 
 
