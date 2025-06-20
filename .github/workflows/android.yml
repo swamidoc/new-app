@@ -12,15 +12,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Buildozer and dependencies
+      - name: Install Buildozer & Android dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk \
-            libffi-dev libssl-dev libsqlite3-dev zlib1g-dev git
+            libffi-dev libssl-dev libsqlite3-dev zlib1g-dev git wget
           pip install --upgrade pip
           pip install cython buildozer
 
-      - name: Build APK with Buildozer
+      - name: Accept Android SDK licenses
+        run: |
+          mkdir -p ~/.android
+          echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
+          yes | buildozer android update
+
+      - name: Build APK
         run: |
           buildozer android debug
 
