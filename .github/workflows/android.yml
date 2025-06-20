@@ -6,40 +6,30 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Stable image
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: 📥 Checkout repository
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: 🧹 Clean Build Cache (optional)
-        run: |
-          rm -rf .buildozer/ .gradle/  # Ensure fresh build
-
-      - name: ⚙️ Install Build Tools and Dependencies
+      - name: Set up Python and Buildozer
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk git \
             autoconf automake libtool libffi-dev libssl-dev libsqlite3-dev \
-            zlib1g-dev wget pkg-config libgl1-mesa-dev
+            zlib1g-dev pkg-config libgl1-mesa-dev
           pip install --upgrade pip
-          pip install cython buildozer
+          pip install cython==0.29.36 buildozer==1.5.0
 
-      - name: ✅ Accept Android SDK Licenses
+      - name: Patch buildozer and accept SDK licenses
         run: |
-          mkdir -p ~/.android
-          echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
+          mkdir -p ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
           yes | buildozer android update
 
-      - name: 🔧 Set Buildozer Compatibility (force py3.9 + fix pyjnius)
-        run: |
-          sed -i 's/^requirements =.*/requirements = python3==3.9,kivy==2.2.1,kivymd,pillow,pydicom,opencv-python-headless,numpy,scipy,matplotlib,torch==2.0.1,torchvision==0.15.2/' buildozer.spec
-          echo "p4a.branch = develop" >> buildozer.spec
-
-      - name: 📦 Build APK
+      - name: Build the APK
         run: buildozer android debug
 
-      - name: 📤 Upload APK
+      - name: Upload the APK
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
