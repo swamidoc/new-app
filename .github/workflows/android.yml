@@ -7,21 +7,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: Install Buildozer and Dependencies
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Buildozer and dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk \
             libffi-dev libssl-dev libsqlite3-dev zlib1g-dev git
-          pip install buildozer
+          pip install --upgrade pip
+          pip install cython buildozer
 
-      - name: Build APK
+      - name: Build APK with Buildozer
         run: |
           buildozer android debug
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
