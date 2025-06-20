@@ -6,17 +6,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # ✅ Use stable version
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Buildozer & Android dependencies
+      - name: Install Build Tools and Dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip zip unzip openjdk-17-jdk \
-            libffi-dev libssl-dev libsqlite3-dev zlib1g-dev git wget
+          sudo apt install -y python3-pip zip unzip openjdk-17-jdk git \
+            autoconf automake libtool libffi-dev libssl-dev libsqlite3-dev \
+            zlib1g-dev wget pkg-config libgl1-mesa-dev
           pip install --upgrade pip
           pip install cython buildozer
 
@@ -34,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
-          path: bin/*.apk
+          path: bin/*.a*
