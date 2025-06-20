@@ -12,24 +12,32 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: Set up Python and Buildozer
+      - name: Set up system and install dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk git \
             autoconf automake libtool libffi-dev libssl-dev libsqlite3-dev \
             zlib1g-dev pkg-config libgl1-mesa-dev
+
+      - name: Install Python packages
+        run: |
           pip install --upgrade pip
           pip install cython==0.29.36 buildozer==1.5.0
 
-      - name: Patch buildozer and accept SDK licenses
+      - name: Install Android SDK licenses & build-tools
         run: |
           mkdir -p ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
-          yes | buildozer android update
+          yes | sdkmanager --licenses || true
+          yes | sdkmanager "build-tools;33.0.2" "platforms;android-31" || true
+
+      - name: Update and prepare Buildozer
+        run: |
+          buildozer android update
 
       - name: Build the APK
         run: buildozer android debug
 
-      - name: Upload the APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: dicom-ai-viewer-apk
