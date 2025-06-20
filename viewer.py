@@ -1,5 +1,5 @@
-# viewer.py
 
+# viewer.py (patched with AI heatmap export and tool panel)
 from backend.ai_models import (
     run_lung_inference,
     run_abdomen_inference,
@@ -13,22 +13,13 @@ from kivymd.uix.screen import MDScreen
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.snackbar import Snackbar
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
-
 
 class DicomViewerScreen(MDScreen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.current_image = None  # should be set when image is loaded
-        self.last_used_model_func = run_lung_inference
-        self.image_widget = Image()
-        self.build_ui()
-
     def build_ui(self):
         layout = BoxLayout(orientation='horizontal')
-        tools_panel = BoxLayout(orientation='vertical', size_hint_x=0.25, spacing=10, padding=5)
+        tools_panel = BoxLayout(orientation='vertical', size_hint_x=0.2, spacing=10, padding=5)
 
-        buttons = [
+        for label, method in [
             ("Window: Bone", self.set_bone_window),
             ("Window: Lung", self.set_lung_window),
             ("Window: Abdomen", self.set_abdomen_window),
@@ -45,9 +36,7 @@ class DicomViewerScreen(MDScreen):
             ("MPR: Axial", self.show_mpr_axial),
             ("MPR: Coronal", self.show_mpr_coronal),
             ("MPR: Sagittal", self.show_mpr_sagittal)
-        ]
-
-        for label, method in buttons:
+        ]:
             tools_panel.add_widget(MDRaisedButton(text=label, on_release=method))
 
         layout.add_widget(tools_panel)
@@ -56,35 +45,23 @@ class DicomViewerScreen(MDScreen):
 
     def export_ai_heatmap(self, *args):
         try:
-            model_func = self.last_used_model_func or run_lung_inference
+            # Fallback to appropriate model inference
+            model_func = self.last_used_model_func if hasattr(self, 'last_used_model_func') else run_lung_inference
             heatmap = model_func(self.current_image)
             save_heatmap_image(heatmap, "ai_heatmap.jpg")
             Snackbar(text="✅ Heatmap exported.").open()
         except Exception as e:
             Snackbar(text=f"❌ Export failed: {e}").open()
 
-    # Placeholder methods — implement real logic for each tool
+    # Dummy methods for completeness
     def set_bone_window(self, *args): pass
     def set_lung_window(self, *args): pass
     def set_abdomen_window(self, *args): pass
     def set_brain_window(self, *args): pass
-
-    def ai_detect_lung(self, *args):
-        self.last_used_model_func = run_lung_inference
-        Snackbar(text="Running lung AI...").open()
-
-    def ai_detect_abdomen(self, *args):
-        self.last_used_model_func = run_abdomen_inference
-        Snackbar(text="Running abdomen AI...").open()
-
-    def ai_detect_pelvis(self, *args):
-        self.last_used_model_func = run_pelvis_inference
-        Snackbar(text="Running pelvis AI...").open()
-
-    def ai_detect_neck(self, *args):
-        self.last_used_model_func = run_neck_inference
-        Snackbar(text="Running neck AI...").open()
-
+    def ai_detect_lung(self, *args): self.last_used_model_func = run_lung_inference
+    def ai_detect_abdomen(self, *args): self.last_used_model_func = run_abdomen_inference
+    def ai_detect_pelvis(self, *args): self.last_used_model_func = run_pelvis_inference
+    def ai_detect_neck(self, *args): self.last_used_model_func = run_neck_inference
     def export_current_image(self, *args): pass
     def export_ai_image(self, *args): pass
     def open_export_menu(self, *args): pass
